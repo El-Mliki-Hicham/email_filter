@@ -62,31 +62,25 @@ class filter extends Controller
         ];
 
         if ($file) {
-            // Ensure the file is not empty
             if ($file->getSize() > 0) {
-                // Read the file contents
                 $lines = file($file->path(), FILE_IGNORE_NEW_LINES);
-                $filteredData = [];
-
+                $filteredData = [];       
                 foreach ($lines as $line) {
-                    // Split each line by ":"
                     $parts = explode('@', $line);
-                    $partsPoint = explode('.', $parts[1]);
-                    $parts2 = explode(':', $partsPoint[1]);
-                    $inArray = in_array($partsPoint[0], $domains);
-                    if (!$inArray) {
-                        $filteredData[] = $line;
+                    if (isset($parts[1])) {
+                        $partsPoint = explode('.', $parts[1]);
+                        if (isset($partsPoint[0]) && isset($partsPoint[1])) {
+                            // $parts2 = explode(':', $partsPoint[1]);
+                            $inArray = in_array($partsPoint[0], $domains);
+                            if (!$inArray) {
+                                $filteredData[] = $line;
+                            }
+                        }
                     }
                 }
-
-                // Generate a filename for the filtered data
                 $filename = 'filtered_data.txt';
                 $filepath = storage_path('app/' . $filename);
-
-                // Write the filtered data to a file
                 file_put_contents($filepath, implode(PHP_EOL, $filteredData));
-
-                // Return a download response
                 return response()->download($filepath, $filename)->deleteFileAfterSend(true);
             } else {
                 return "File not found.";
